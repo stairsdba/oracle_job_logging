@@ -1,0 +1,11 @@
+create or replace PACKAGE JOB_LOG AS
+
+  /* TODO enter package declarations (types, exceptions, methods etc) here */
+  function startJob(job_name in varchar2) return int;
+  
+  procedure finishJob(jobid in int, instatus in varchar default 'OK', err_msg in varchar2 default '');
+  
+  function startJobStep(jobid in int, step_name in varchar2, step_notes in varchar default '') return int;
+  
+  procedure finishJobStep(jobid in int, stepid in int, instatus in varchar default 'OK', err_msg in varchar2 default '');
+END JOB_LOG;

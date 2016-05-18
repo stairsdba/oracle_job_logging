@@ -1,0 +1,46 @@
+create or replace PACKAGE BODY JOB_LOG AS
+
+  function startJob(job_name in varchar2) return int AS
+  PRAGMA AUTONOMOUS_TRANSACTION;
+  jobid int;
+  BEGIN
+    select sq_job_log.NEXTVAL into jobid from dual;     
+    
+    insert into job_masters (job_id, job_name, exec_user) values ( jobid, job_name, USER);
+    
+    commit;
+    RETURN jobid;
+  END startJob;
+
+  procedure finishJob(jobid in int, instatus in varchar default 'OK', err_msg in varchar2 default '') AS
+  PRAGMA AUTONOMOUS_TRANSACTION;
+  BEGIN
+      update job_masters set status = instatus, message = err_msg, end_time = sysdate
+      where job_id = jobid;
+      
+      commit;
+              
+  END finishJob;
+  
+  function startJobStep( jobid in int, step_name in varchar2, step_notes in varchar default '') return int AS
+  PRAGMA AUTONOMOUS_TRANSACTION;
+  stepid int;
+  BEGIN
+    select sq_job_step_log.NEXTVAL into stepid from dual;     
+    
+    insert into job_steps (job_id, step_id, step_name, step_notes, exec_user) values ( jobid, stepid, step_name, step_notes, USER);
+    
+    commit;
+    RETURN stepid;
+  END startJobStep;
+
+  procedure finishJobStep(jobid in int, stepid in int, instatus in varchar default 'OK', err_msg in varchar2 default '') AS
+  PRAGMA AUTONOMOUS_TRANSACTION;
+  BEGIN
+      update job_steps set status = instatus, message = err_msg, end_time = sysdate
+      where job_id = jobid and step_id = stepid;
+      
+      commit;
+              
+  END finishJobStep;
+END JOB_LOG;
